@@ -8,11 +8,6 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface ChatApiRequest {
-  message: string;
-  history: ChatMessage[];
-}
-
 export type MissingAvailabilityField = 'checkIn' | 'checkOut' | 'adults';
 
 export interface AvailabilityRoom {
@@ -26,6 +21,18 @@ export interface AvailabilityQuery {
   checkIn: string;
   checkOut: string;
   adults: number;
+}
+
+export interface ChatApiRequest {
+  message: string;
+  history: ChatMessage[];
+  /**
+   * Optional structured values from the availability date/guest picker
+   * (Step 7 UI). When present, these are used directly instead of trying to
+   * regex-parse dates back out of free text — more reliable, still fully
+   * deterministic/LLM-free.
+   */
+  availabilityParams?: Partial<AvailabilityQuery>;
 }
 
 export type ChatApiErrorCode = 'VALIDATION_ERROR' | 'LLM_ERROR' | 'INTERNAL_ERROR';
