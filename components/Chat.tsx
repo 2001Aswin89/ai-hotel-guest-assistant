@@ -1,20 +1,26 @@
 'use client';
 
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
-import type { ChatApiResponse, ChatMessage } from '@/lib/api-types';
+import type { AvailabilityQuery, ChatApiResponse, ChatMessage } from '@/lib/api-types';
 import { sendChatMessage } from '@/lib/chat-client';
+import AvailabilityForm from '@/components/AvailabilityForm';
+import AvailabilityResults from '@/components/AvailabilityResults';
 
 export interface UiMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  /** Full API response behind an assistant message — Step 7 uses `.type` to
-   *  decide whether to render a clarify form / availability cards alongside the text. */
+  /** Full API response behind an assistant message — used to decide whether
+   *  to render a clarify form / availability cards alongside the text. */
   response?: ChatApiResponse;
 }
 
 function toHistory(messages: UiMessage[]): ChatMessage[] {
   return messages.map((m) => ({ role: m.role, content: m.content }));
+}
+
+function formatAvailabilitySubmission(params: AvailabilityQuery): string {
+  return `Check-in ${params.checkIn}, check-out ${params.checkOut}, ${params.adults} guest(s)`;
 }
 
 function MessageBubble({ message }: { message: UiMessage }) {
@@ -58,8 +64,8 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  async function sendMessage() {
-    const trimmed = input.trim();
+  async function sendMessage(overrideMessage?: string, availabilityParams?: AvailabilityQuery) {
+    const trimmed = (overrideMessage ?? input).trim();
     if (!trimmed || isLoading) return;
 
     const userMessage: UiMessage = { id: crypto.randomUUID(), role: 'user', content: trimmed };
@@ -69,7 +75,11 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessage({ message: trimmed, history: historyForRequest });
+      const response = await sendChatMessage({
+        message: trimmed,
+        history: historyForRequest,
+        availabilityParams,
+      });
       const assistantMessage: UiMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -98,6 +108,12 @@ export default function Chat() {
     }
   }
 
+  function handleAvailabilitySubmit(params: AvailabilityQuery) {
+    void sendMessage(formatAvailabilitySubmission(params), params);
+  }
+
+  const lastMessageId = messages[messages.length - 1]?.id;
+
   return (
     <div className="flex h-full w-full max-w-2xl flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
@@ -108,9 +124,27 @@ export default function Chat() {
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
+        {messages.map((message) => {
+          // Only the most recent assistant message is still actionable — an
+          // older clarify/availability turn shouldn't keep showing a live form.
+          const isActionable = message.id === lastMessageId && !isLoading;
+
+          return (
+            <div key={message.id} className="space-y-2">
+              <MessageBubble message={message} />
+              {isActionable && message.response?.type === 'clarify' && (
+                <AvailabilityForm
+                  missing={message.response.missing}
+                  partial={message.response.partial}
+                  onSubmit={handleAvailabilitySubmit}
+                />
+              )}
+              {isActionable && message.response?.type === 'availability_result' && (
+                <AvailabilityResults query={message.response.query} rooms={message.response.rooms} />
+              )}
+            </div>
+          );
+        })}
         {isLoading && <LoadingBubble />}
       </div>
 
