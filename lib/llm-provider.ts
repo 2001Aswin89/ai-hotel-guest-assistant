@@ -9,7 +9,12 @@ export interface LlmProvider {
   generate(prompt: string, context: string): Promise<string>;
 }
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+// The 2.5 line (gemini-2.5-flash, gemini-2.5-flash-lite) has been retired
+// for new API keys as of this writing — the API itself 404s and points to
+// the 3.x replacement (verified live against the real API, not just docs).
+// gemini-3.5-flash-lite was chosen over gemini-3.5-flash for its higher
+// free-tier request headroom (see README.md's model guidance).
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 
 export class GeminiProvider implements LlmProvider {
   private readonly apiKey: string | undefined;
