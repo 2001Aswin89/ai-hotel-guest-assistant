@@ -42,7 +42,7 @@ function MessageBubble({ message }: { message: UiMessage }) {
       <div
         className={`max-w-[88%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap break-words shadow-sm sm:max-w-[75%] ${
           isUser
-            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-black'
+            ? 'bg-teal-700 text-white dark:bg-teal-600'
             : 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
         }`}
       >
@@ -177,19 +177,19 @@ export default function Chat() {
   const lastMessageId = messages[messages.length - 1]?.id;
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col bg-white dark:bg-zinc-950">
-      {/* Fluid header — spans the full window width, content column matches
-          the message/composer column below so everything lines up. */}
+    <div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
+      {/* Header — width now bounded by the panel in page.tsx, not by an
+          internal max-width, so it always matches the panel edge-to-edge. */}
       <header className="shrink-0 border-b border-zinc-200/80 bg-white/85 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-950/85">
-        <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
+        <div className="flex w-full items-center gap-3 px-4 py-3 sm:px-5">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-black"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-700 text-sm font-semibold text-white dark:bg-teal-500 dark:text-teal-950"
             aria-hidden="true"
           >
             H
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="font-display truncate text-base italic text-zinc-900 dark:text-zinc-50">
               Harborview Grand Hotel
             </h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">Guest Assistant</p>
@@ -198,9 +198,9 @@ export default function Chat() {
       </header>
 
       {/* Scroll region fills whatever space is left between header and
-          composer, at any window size/aspect ratio — no fixed-height card. */}
+          composer, at any window size/aspect ratio. */}
       <div className="chat-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-6 sm:px-6">
+        <div className="flex w-full flex-col gap-3 px-4 py-6 sm:px-5">
           {messages.map((message) => {
             // Only the most recent assistant message is still actionable — an
             // older clarify/availability turn shouldn't keep showing a live form.
@@ -229,11 +229,10 @@ export default function Chat() {
       </div>
 
       {/* Composer — a single rounded input "capsule" like ChatGPT/Claude,
-          rather than two separate pill controls. Sits in the same max-width
-          column as the messages above, full-bleed only at very narrow widths. */}
+          rather than two separate pill controls. */}
       <div className="shrink-0 border-t border-zinc-200/80 bg-white/85 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-950/85">
-        <form onSubmit={handleFormSubmit} className="mx-auto w-full max-w-3xl px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2 rounded-3xl border border-zinc-200 bg-zinc-50 py-1.5 pl-4 pr-1.5 shadow-sm transition-colors focus-within:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:focus-within:border-zinc-600">
+        <form onSubmit={handleFormSubmit} className="w-full px-4 py-3 sm:px-5">
+          <div className="flex items-center gap-2 rounded-3xl border border-zinc-200 bg-zinc-50 py-1.5 pl-4 pr-1.5 shadow-sm transition-colors focus-within:border-teal-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus-within:border-teal-500">
             <input
               type="text"
               value={input}
@@ -247,7 +246,7 @@ export default function Chat() {
               type="submit"
               disabled={isLoading || input.trim().length === 0}
               aria-label="Send message"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white transition-transform disabled:opacity-30 disabled:pointer-events-none enabled:hover:scale-105 dark:bg-zinc-100 dark:text-black"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-700 text-white transition-transform disabled:opacity-30 disabled:pointer-events-none enabled:hover:scale-105 dark:bg-teal-500 dark:text-teal-950"
             >
               <SendIcon />
             </button>
