@@ -13,8 +13,12 @@ export interface KnowledgeIntent {
 export type Intent = AvailabilityIntent | KnowledgeIntent;
 
 // Keyword/pattern based on purpose (assignment explicitly says this doesn't need an LLM call).
+// NOTE: word-stem alternatives (availab/vacan) deliberately have NO trailing \b right after
+// the stem — "available"/"availability" continue with more letters, so a \b there would never
+// match (this was a real bug: it silently never matched "availab" and relied on other phrasings
+// like "do you have rooms" to catch availability questions at all).
 const AVAILABILITY_KEYWORDS =
-  /\b(availab|vacanc|vacant|book(ing)?|reserve|reservation|any rooms?|free rooms?|do you have (a |any )?rooms?|rooms? for)\b/i;
+  /\b(availab\w*|vacan\w*|book(?:ing)?|reserve|reservation|any rooms?|free rooms?|do you have (?:a |any )?rooms?|rooms? for)\b/i;
 
 const ISO_DATE = /\b(\d{4}-\d{2}-\d{2})\b/g;
 const ADULTS_PATTERN = /\b(\d{1,2})\s*(adults?|guests?|people|persons?|pax)\b/i;
