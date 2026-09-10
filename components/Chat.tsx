@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { AvailabilityQuery, ChatApiResponse, ChatMessage } from '@/lib/api-types';
 import { sendChatMessage } from '@/lib/chat-client';
 import AvailabilityForm from '@/components/AvailabilityForm';
@@ -40,7 +40,7 @@ function MessageBubble({ message }: { message: UiMessage }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words ${
+        className={`max-w-[88%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap break-words shadow-sm sm:max-w-[75%] ${
           isUser
             ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-black'
             : 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
@@ -55,12 +55,26 @@ function MessageBubble({ message }: { message: UiMessage }) {
 function LoadingBubble() {
   return (
     <div className="flex justify-start" data-testid="loading-indicator">
-      <div className="flex items-center gap-1 rounded-2xl bg-zinc-100 px-4 py-3 dark:bg-zinc-800">
+      <div className="flex items-center gap-1 rounded-2xl bg-zinc-100 px-4 py-3 shadow-sm dark:bg-zinc-800">
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]" />
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]" />
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" />
       </div>
     </div>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+      <path
+        d="M12 19V5M12 5L5 12M12 5L19 12"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -78,6 +92,14 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ErrorInfo | null>(null);
+  const scrollAnchorRef = useRef<HTMLDivElement>(null);
+
+  // Keep the latest message/loading/error state in view as the conversation
+  // grows, the way ChatGPT/Claude's web UI does — without this, a guest
+  // would have to manually scroll down after every reply.
+  useEffect(() => {
+    scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, isLoading, error]);
 
   /** Performs the network round-trip for an already-appended user message.
    *  Kept separate from the "append + clear input" step so Retry can re-run
@@ -155,61 +177,83 @@ export default function Chat() {
   const lastMessageId = messages[messages.length - 1]?.id;
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-white dark:bg-zinc-950 sm:h-[85vh] sm:max-h-[720px] sm:w-full sm:max-w-2xl sm:rounded-2xl sm:border sm:border-zinc-200 sm:shadow-sm dark:sm:border-zinc-800">
-      <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          Harborview Grand Hotel
-        </h1>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">Guest Assistant</p>
+    <div className="flex h-[100dvh] w-full flex-col bg-white dark:bg-zinc-950">
+      {/* Fluid header — spans the full window width, content column matches
+          the message/composer column below so everything lines up. */}
+      <header className="shrink-0 border-b border-zinc-200/80 bg-white/85 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-950/85">
+        <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-black"
+            aria-hidden="true"
+          >
+            H
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              Harborview Grand Hotel
+            </h1>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">Guest Assistant</p>
+          </div>
+        </div>
       </header>
 
-      <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4">
-        {messages.map((message) => {
-          // Only the most recent assistant message is still actionable — an
-          // older clarify/availability turn shouldn't keep showing a live form.
-          const isActionable = message.id === lastMessageId && !isLoading;
+      {/* Scroll region fills whatever space is left between header and
+          composer, at any window size/aspect ratio — no fixed-height card. */}
+      <div className="chat-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-6 sm:px-6">
+          {messages.map((message) => {
+            // Only the most recent assistant message is still actionable — an
+            // older clarify/availability turn shouldn't keep showing a live form.
+            const isActionable = message.id === lastMessageId && !isLoading;
 
-          return (
-            <div key={message.id} className="space-y-2">
-              <MessageBubble message={message} />
-              {isActionable && message.response?.type === 'clarify' && (
-                <AvailabilityForm
-                  missing={message.response.missing}
-                  partial={message.response.partial}
-                  onSubmit={handleAvailabilitySubmit}
-                />
-              )}
-              {isActionable && message.response?.type === 'availability_result' && (
-                <AvailabilityResults query={message.response.query} rooms={message.response.rooms} />
-              )}
-            </div>
-          );
-        })}
-        {isLoading && <LoadingBubble />}
-        {error && <ErrorState message={error.message} onRetry={handleRetry} disabled={isLoading} />}
+            return (
+              <div key={message.id} className="flex flex-col gap-2">
+                <MessageBubble message={message} />
+                {isActionable && message.response?.type === 'clarify' && (
+                  <AvailabilityForm
+                    missing={message.response.missing}
+                    partial={message.response.partial}
+                    onSubmit={handleAvailabilitySubmit}
+                  />
+                )}
+                {isActionable && message.response?.type === 'availability_result' && (
+                  <AvailabilityResults query={message.response.query} rooms={message.response.rooms} />
+                )}
+              </div>
+            );
+          })}
+          {isLoading && <LoadingBubble />}
+          {error && <ErrorState message={error.message} onRetry={handleRetry} disabled={isLoading} />}
+          <div ref={scrollAnchorRef} />
+        </div>
       </div>
 
-      <form
-        onSubmit={handleFormSubmit}
-        className="flex gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800"
-      >
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleInputKeyDown}
-          placeholder="Ask a question..."
-          className="min-w-0 flex-1 rounded-full border border-zinc-300 bg-white px-4 py-2 text-base sm:text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={isLoading || input.trim().length === 0}
-          className="shrink-0 rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-zinc-100 dark:text-black"
-        >
-          Send
-        </button>
-      </form>
+      {/* Composer — a single rounded input "capsule" like ChatGPT/Claude,
+          rather than two separate pill controls. Sits in the same max-width
+          column as the messages above, full-bleed only at very narrow widths. */}
+      <div className="shrink-0 border-t border-zinc-200/80 bg-white/85 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-950/85">
+        <form onSubmit={handleFormSubmit} className="mx-auto w-full max-w-3xl px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2 rounded-3xl border border-zinc-200 bg-zinc-50 py-1.5 pl-4 pr-1.5 shadow-sm transition-colors focus-within:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:focus-within:border-zinc-600">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              placeholder="Ask a question..."
+              className="min-w-0 flex-1 bg-transparent py-2 text-base text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-zinc-100 dark:placeholder:text-zinc-500 sm:text-sm"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || input.trim().length === 0}
+              aria-label="Send message"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white transition-transform disabled:opacity-30 disabled:pointer-events-none enabled:hover:scale-105 dark:bg-zinc-100 dark:text-black"
+            >
+              <SendIcon />
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
