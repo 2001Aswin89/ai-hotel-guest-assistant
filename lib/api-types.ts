@@ -43,7 +43,15 @@ export type ChatApiErrorCode = 'VALIDATION_ERROR' | 'LLM_ERROR' | 'INTERNAL_ERRO
  */
 export type ChatApiResponse = { requestId: string } & (
   | { type: 'answer'; reply: string }
-  | { type: 'clarify'; reply: string; missing: MissingAvailabilityField[] }
+  | {
+      type: 'clarify';
+      reply: string;
+      missing: MissingAvailabilityField[];
+      /** Fields already extracted (from text or a prior form submission) —
+       *  the frontend must resend these alongside whatever it collects next,
+       *  or already-known values (e.g. "2 adults") get silently lost. */
+      partial: Partial<AvailabilityQuery>;
+    }
   | {
       type: 'availability_result';
       reply: string;
