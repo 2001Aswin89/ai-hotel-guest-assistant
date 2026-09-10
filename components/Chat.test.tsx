@@ -13,7 +13,7 @@ const mockedSend = vi.mocked(sendChatMessage);
 function typeAndSubmit(text: string) {
   const input = screen.getByPlaceholderText('Ask a question...');
   fireEvent.change(input, { target: { value: text } });
-  fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
 }
 
 beforeEach(() => {
