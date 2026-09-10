@@ -24,3 +24,38 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Chat scroll area — a thin, unobtrusive scrollbar instead of the OS
+   default, which reads as generic. Firefox via scrollbar-width/-color,
+   Chromium/Safari via the ::-webkit- pseudo-elements. Colors mirror the
+   light/dark foreground tokens above so it stays theme-aware without
+   duplicating a Tailwind dark: setup in plain CSS. */
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
+.chat-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.18);
+  border-radius: 9999px;
+}
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.32);
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat-scroll {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  .chat-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .chat-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.35);
+  }
+}
