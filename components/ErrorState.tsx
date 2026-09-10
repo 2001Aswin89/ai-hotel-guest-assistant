@@ -6,7 +6,7 @@ interface Props {
 
 export default function ErrorState({ message, onRetry, disabled }: Props) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+    <div className="message-in flex items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
       <span>{message}</span>
       <button
         type="button"

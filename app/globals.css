@@ -64,3 +64,26 @@ body {
     background-color: rgba(255, 255, 255, 0.35);
   }
 }
+
+/* Entrance animation for a newly-added chat message/card — slides up from
+   below into its resting position while fading in. Applied once per DOM
+   node: because each message keeps a stable `key`, only a genuinely new
+   node (a new message) ever mounts and plays this; existing bubbles never
+   re-animate on unrelated re-renders. Scoped inside the no-preference media
+   query so prefers-reduced-motion users get an instant, motion-free UI. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes message-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .message-in {
+    animation: message-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
