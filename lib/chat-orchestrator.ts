@@ -87,6 +87,7 @@ export class ChatOrchestrator {
             type: 'clarify',
             reply: buildClarifyReply(intent.missing),
             missing: intent.missing,
+            partial: intent.params,
           },
         };
       }
