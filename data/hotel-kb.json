@@ -1,1 +1,87 @@
-{}
+{
+  "hotelName": "Harborview Grand Hotel",
+  "checkInTime": "14:00",
+  "checkOutTime": "11:00",
+  "amenities": [
+    {
+      "name": "Swimming Pool",
+      "description": "Outdoor heated pool on the 3rd-floor terrace, open daily 6:00 AM - 9:00 PM. Towels provided poolside."
+    },
+    {
+      "name": "Free Wi-Fi",
+      "description": "Complimentary high-speed Wi-Fi throughout the hotel, including all guest rooms, the lobby, and the pool deck."
+    },
+    {
+      "name": "Parking",
+      "description": "Complimentary self-parking for hotel guests in the on-site basement garage, subject to availability."
+    },
+    {
+      "name": "Breakfast",
+      "description": "Complimentary breakfast buffet served daily 7:00 AM - 10:30 AM in the Harborview Restaurant, included with every room booking."
+    },
+    {
+      "name": "Fitness Center",
+      "description": "24-hour gym on the 2nd floor with cardio machines and free weights, accessible with your room key."
+    },
+    {
+      "name": "Airport Shuttle",
+      "description": "Paid shuttle service to and from the airport, available on request at the front desk, subject to schedule."
+    }
+  ],
+  "rooms": [
+    {
+      "type": "Standard Room",
+      "capacity": 2,
+      "pricePerNight": 4500,
+      "description": "One queen bed, city view, 24 sq. m. Suitable for solo travelers or couples."
+    },
+    {
+      "type": "Deluxe Room",
+      "capacity": 3,
+      "pricePerNight": 6200,
+      "description": "One king bed plus a daybed, partial sea view, 30 sq. m. Suitable for small families or up to 3 adults."
+    },
+    {
+      "type": "Executive Suite",
+      "capacity": 4,
+      "pricePerNight": 9500,
+      "description": "Separate living area, two queen beds, full sea view, 45 sq. m. Suitable for families of up to 4."
+    },
+    {
+      "type": "Family Suite",
+      "capacity": 5,
+      "pricePerNight": 11800,
+      "description": "Two connecting rooms, one king bed and two twin beds, 58 sq. m. total. Suitable for larger families of up to 5."
+    }
+  ],
+  "cancellationPolicy": {
+    "summary": "Free cancellation up to 48 hours before check-in; cancellations within 48 hours are charged one night's stay.",
+    "details": "Guests may cancel or modify a reservation free of charge up to 48 hours before the scheduled check-in date. Cancellations made within 48 hours of check-in, or no-shows, will be charged the cost of the first night. Refunds for eligible cancellations are processed to the original payment method within 5-7 business days."
+  },
+  "faqs": [
+    {
+      "question": "Is breakfast included in the room rate?",
+      "answer": "Yes, a complimentary breakfast buffet is included with every room booking, served 7:00 AM - 10:30 AM."
+    },
+    {
+      "question": "Do you allow pets?",
+      "answer": "The hotel does not allow pets, with the exception of registered service animals."
+    },
+    {
+      "question": "What is the minimum check-in age?",
+      "answer": "Guests must be at least 18 years old to check in without a parent or guardian present."
+    },
+    {
+      "question": "Is early check-in or late check-out available?",
+      "answer": "Early check-in and late check-out are available on request and subject to room availability; a fee may apply for late check-out."
+    },
+    {
+      "question": "Do you offer airport transfers?",
+      "answer": "Yes, a paid airport shuttle is available on request at the front desk, subject to schedule."
+    },
+    {
+      "question": "Is smoking allowed in the rooms?",
+      "answer": "All guest rooms are non-smoking. Designated smoking areas are available outside the main entrance."
+    }
+  ]
+}
