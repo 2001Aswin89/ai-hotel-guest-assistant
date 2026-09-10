@@ -31,7 +31,7 @@ export default function AvailabilityForm({ missing, partial, onSubmit, disabled 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-wrap items-end gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+      className="flex flex-wrap items-end gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
     >
       {missing.includes('checkIn') && (
         <label className="flex flex-col gap-1">
@@ -42,7 +42,7 @@ export default function AvailabilityForm({ missing, partial, onSubmit, disabled 
             onChange={(e) => setCheckIn(e.target.value)}
             required
             disabled={disabled}
-            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-zinc-900 outline-none transition-colors focus:border-teal-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-teal-500"
           />
         </label>
       )}
@@ -55,7 +55,7 @@ export default function AvailabilityForm({ missing, partial, onSubmit, disabled 
             onChange={(e) => setCheckOut(e.target.value)}
             required
             disabled={disabled}
-            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-zinc-900 outline-none transition-colors focus:border-teal-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-teal-500"
           />
         </label>
       )}
@@ -77,7 +77,7 @@ export default function AvailabilityForm({ missing, partial, onSubmit, disabled 
       <button
         type="submit"
         disabled={disabled || !canSubmit}
-        className="rounded-lg bg-zinc-900 px-4 py-1.5 font-medium text-white disabled:opacity-40 dark:bg-zinc-100 dark:text-black"
+        className="rounded-lg bg-teal-700 px-4 py-1.5 font-medium text-white transition-colors enabled:hover:bg-teal-800 disabled:opacity-40 dark:bg-teal-500 dark:text-teal-950 dark:enabled:hover:bg-teal-400"
       >
         Check availability
       </button>
