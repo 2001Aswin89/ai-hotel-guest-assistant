@@ -12,19 +12,30 @@ export interface LlmProvider {
 const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 export class GeminiProvider implements LlmProvider {
-  private readonly client: GoogleGenAI;
+  private readonly apiKey: string | undefined;
   private readonly model: string;
+  private client: GoogleGenAI | undefined;
 
+  // Deliberately does NOT throw here: the availability/clarify paths never
+  // call generate() at all, so a missing key shouldn't break those requests.
+  // The key is only required — and only checked — once generate() actually runs.
   constructor(apiKey: string | undefined = process.env.GOOGLE_GEMINI_API_KEY, model: string = process.env.GEMINI_MODEL ?? DEFAULT_MODEL) {
-    if (!apiKey) {
-      throw new Error('GOOGLE_GEMINI_API_KEY is not set');
-    }
-    this.client = new GoogleGenAI({ apiKey });
+    this.apiKey = apiKey;
     this.model = model;
   }
 
+  private getClient(): GoogleGenAI {
+    if (!this.apiKey) {
+      throw new Error('GOOGLE_GEMINI_API_KEY is not set');
+    }
+    if (!this.client) {
+      this.client = new GoogleGenAI({ apiKey: this.apiKey });
+    }
+    return this.client;
+  }
+
   async generate(prompt: string, context: string): Promise<string> {
-    const response = await this.client.models.generateContent({
+    const response = await this.getClient().models.generateContent({
       model: this.model,
       contents: prompt,
       config: {
