@@ -33,20 +33,28 @@ requirements folder for the full build plan this was developed against.
    2. Click **Create API key** (a new Google Cloud project is created automatically if you don't have one).
    3. Copy the key into `.env.local` as `GOOGLE_GEMINI_API_KEY=<your key>`.
 
-   **Choosing a model (free tier):** this app defaults to `gemini-2.5-flash` if `GEMINI_MODEL`
-   is left unset in `.env.local`. On the free tier, Google's Gemini API rate-limits by
-   requests-per-minute (RPM), requests-per-day (RPD), and tokens-per-minute, and these limits
-   change over time — check [ai.google.dev/gemini-api/docs/rate-limits](https://ai.google.dev/gemini-api/docs/rate-limits)
-   for current numbers before choosing. As a rule of thumb for this app's traffic pattern
-   (one small request per guest message, not high-volume):
-   - **`gemini-2.5-flash`** (default) — best balance of quality and free-tier headroom for a
-     conversational assistant; fine for this assignment's manual testing and demo use.
-   - **`gemini-2.5-flash-lite`** (or the smallest available "flash-lite"/"flash-8b"-class model
-     at the time you read this) — pick this instead if you hit rate limits during testing;
-     noticeably higher free-tier request allowances at a small quality cost, which barely
-     matters since answers are already grounded in a short, fixed knowledge base.
-   - Avoid the `-pro` tier models for this project — the free-tier allowance is much lower
-     and the extra reasoning quality isn't needed for grounded FAQ/availability answers.
+   **Choosing a model (free tier):** this app defaults to `gemini-3.5-flash-lite` if
+   `GEMINI_MODEL` is left unset in `.env.local`. Google's Gemini model lineup and free-tier
+   rate limits (requests-per-minute, requests-per-day, tokens-per-minute) change frequently —
+   **the model landscape moves fast enough that even this README can go stale**: during
+   development, both `gemini-2.5-flash` and `gemini-2.5-flash-lite` (the models originally
+   chosen here based on published rate-limit comparisons) turned out to have already been
+   retired for new API keys by the time of testing — the live API returned a 404 naming their
+   3.x replacements. **If `gemini-3.5-flash-lite` also errors by the time you read this, check
+   the exact error message** — Gemini API 404s for a retired model name the correct current
+   replacement directly — or check [ai.google.dev/gemini-api/docs/models](https://ai.google.dev/gemini-api/docs/models)
+   and your account's live limits at [aistudio.google.com/rate-limit](https://aistudio.google.com/rate-limit).
+
+   As a naming-pattern rule of thumb (verified true for the 2.5 → 3.x transition, likely to
+   hold going forward) for this app's traffic pattern (one small request per guest message,
+   grounded in a short fixed knowledge base — not high-volume, doesn't need top-tier reasoning):
+   - **`gemini-<version>-flash-lite`** (default) — the "lite" variant consistently carries
+     meaningfully higher free-tier request allowances than plain "flash" for a small quality
+     tradeoff that doesn't matter here.
+   - **`gemini-<version>-flash`** — use this instead if you need noticeably better answer
+     quality and can tolerate a lower daily/per-minute request ceiling.
+   - Avoid `-pro` tier models for this project — free-tier allowance is much lower and the
+     extra reasoning quality isn't needed for grounded FAQ/availability answers.
 
    To use a different model, set `GEMINI_MODEL=<model-name>` in `.env.local`.
 
