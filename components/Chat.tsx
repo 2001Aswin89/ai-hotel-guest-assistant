@@ -93,6 +93,8 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ErrorInfo | null>(null);
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isFirstRenderRef = useRef(true);
 
   // Keep the latest message/loading/error state in view as the conversation
   // grows, the way ChatGPT/Claude's web UI does — without this, a guest
@@ -100,6 +102,23 @@ export default function Chat() {
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, isLoading, error]);
+
+  // The input is disabled while a request is in flight, and a browser
+  // forcibly blurs an element the instant it's disabled — so after sending
+  // a message the guest would otherwise have to click back into the box to
+  // type a follow-up. Restore focus once it's re-enabled (this effect only
+  // runs after the DOM has actually committed disabled={false}). Skips the
+  // very first render so the page doesn't auto-focus (and pop the mobile
+  // keyboard) on initial load — only re-focuses after a real request.
+  useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      return;
+    }
+    if (!isLoading) {
+      inputRef.current?.focus();
+    }
+  }, [isLoading]);
 
   /** Performs the network round-trip for an already-appended user message.
    *  Kept separate from the "append + clear input" step so Retry can re-run
@@ -234,6 +253,7 @@ export default function Chat() {
         <form onSubmit={handleFormSubmit} className="w-full px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2 rounded-3xl border border-zinc-200 bg-zinc-50 py-1.5 pl-4 pr-1.5 shadow-sm transition-colors focus-within:border-teal-500 dark:border-zinc-800 dark:bg-zinc-900 dark:focus-within:border-teal-500">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
