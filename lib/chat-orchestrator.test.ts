@@ -86,7 +86,7 @@ describe('ChatOrchestrator', () => {
   it('treats an ambiguous relative date as missing info and asks to clarify', async () => {
     const orchestrator = new ChatOrchestrator(fakeLlm('unused'));
     const { body } = await orchestrator.handle(
-      request({ message: 'do you have any availability next week?' }),
+      request({ message: 'do you have any rooms available next week?' }),
       'req-5',
     );
 
@@ -112,6 +112,29 @@ describe('ChatOrchestrator', () => {
     if (body.type === 'answer') {
       expect(body.reply).not.toMatch(/yes.*included/i);
     }
+  });
+
+  // Regression test for a real bug found during manual/recorded testing:
+  // "available" alone (with no room/stay word nearby) was matching the
+  // availability keyword regex, hijacking amenity questions into the
+  // booking flow. checkAvailability() has no idea what "go carting" is —
+  // it just returned room results regardless of what was actually asked.
+  it('routes an amenity question containing "available" to knowledge, not availability', async () => {
+    const orchestrator = new ChatOrchestrator(
+      fakeLlm('NOT_FOUND'), // hotel doesn't offer go-karting or a complimentary spa
+    );
+
+    const spaRes = await orchestrator.handle(
+      request({ message: 'since you have a spa, is a complementary massage included for free?' }),
+      'req-spa',
+    );
+    expect(spaRes.body.type).toBe('answer');
+
+    const goKartRes = await orchestrator.handle(
+      request({ message: 'do you have go carting available?' }),
+      'req-gokart',
+    );
+    expect(goKartRes.body.type).toBe('answer');
   });
 
   // B7 — a follow-up question uses the prior conversation turns as context.
