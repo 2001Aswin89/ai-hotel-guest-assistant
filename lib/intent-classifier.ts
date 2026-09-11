@@ -13,12 +13,29 @@ export interface KnowledgeIntent {
 export type Intent = AvailabilityIntent | KnowledgeIntent;
 
 // Keyword/pattern based on purpose (assignment explicitly says this doesn't need an LLM call).
-// NOTE: word-stem alternatives (availab/vacan) deliberately have NO trailing \b right after
-// the stem — "available"/"availability" continue with more letters, so a \b there would never
-// match (this was a real bug: it silently never matched "availab" and relied on other phrasings
-// like "do you have rooms" to catch availability questions at all).
-const AVAILABILITY_KEYWORDS =
-  /\b(availab\w*|vacan\w*|book(?:ing)?|reserve|reservation|any rooms?|free rooms?|do you have (?:a |any )?rooms?|rooms? for)\b/i;
+//
+// Phrasing that's unambiguous on its own — "vacancy", "do you have any
+// rooms", etc. Always availability intent.
+const STRONG_AVAILABILITY_PHRASES =
+  /\b(vacan\w*|any rooms?|free rooms?|do you have (?:a |any )?rooms?|rooms? for)\b/i;
+
+// "available"/"book"/"reserve" alone are too generic a signal — e.g. "is
+// the spa available", "do you have go-karting available", "can I book a
+// spa session" all use these words about something that isn't a room at
+// all. A real guest question found exactly this bug live: "since you have
+// a spa, is a complementary massage included?" and "do you have go
+// carting available?" were both misrouted into the booking flow purely
+// because they contained "available", and the deterministic
+// checkAvailability() tool has no idea what "go carting" even means — it
+// just returned room results regardless. So these verbs only count as
+// availability intent when paired with an actual room/stay noun.
+const AVAILABILITY_VERB = /\b(availab\w*|book(?:ing)?|reserve|reservation)\b/i;
+const ROOM_CONTEXT = /\b(rooms?|suites?|stay|accommodation)\b/i;
+
+function isAvailabilityText(message: string): boolean {
+  if (STRONG_AVAILABILITY_PHRASES.test(message)) return true;
+  return AVAILABILITY_VERB.test(message) && ROOM_CONTEXT.test(message);
+}
 
 const ISO_DATE = /\b(\d{4}-\d{2}-\d{2})\b/g;
 const ADULTS_PATTERN = /\b(\d{1,2})\s*(adults?|guests?|people|persons?|pax)\b/i;
@@ -48,12 +65,11 @@ function missingFields(params: Partial<AvailabilityQuery>): MissingAvailabilityF
  */
 export class IntentClassifier {
   classify(message: string, explicitParams?: Partial<AvailabilityQuery>): Intent {
-    const isAvailabilityText = AVAILABILITY_KEYWORDS.test(message);
     const hasExplicitParams =
       explicitParams &&
       (explicitParams.checkIn || explicitParams.checkOut || explicitParams.adults !== undefined);
 
-    if (!isAvailabilityText && !hasExplicitParams) {
+    if (!isAvailabilityText(message) && !hasExplicitParams) {
       return { intent: 'knowledge' };
     }
 

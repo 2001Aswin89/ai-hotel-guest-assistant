@@ -1,12 +1,12 @@
 # Evaluation & Test Results
 
-All scenarios below run automatically via `npm test` (Vitest). Full suite: **22/22 passing**
+All scenarios below run automatically via `npm test` (Vitest). Full suite: **23/23 passing**
 across 4 test files, no real Gemini API calls made (all LLM calls are mocked/injected — see
 `ARCHITECTURE.md`'s Dependency Inversion note). Output below is copied from an actual local run.
 
 ```
  Test Files  4 passed (4)
-      Tests  22 passed (22)
+      Tests  23 passed (23)
 ```
 
 ## Master scenario list (mapped to the assignment's Evaluation & Testing categories)
@@ -24,11 +24,12 @@ across 4 test files, no real Gemini API calls made (all LLM calls are mocked/inj
 | B9 | LLM provider throws → graceful `type:'error'`, no crash | Backend/model failure-fallback | `lib/chat-orchestrator.test.ts` | ✅ pass |
 | B10 | No rooms available → UI-friendly empty result, not an error | Availability/tool-calling (edge case) | `lib/chat-orchestrator.test.ts` | ✅ pass |
 | B11 | Direct POST to the real route handler → full response shape asserted | End-to-end flow (backend side) | `app/api/chat/route.test.ts` | ✅ pass |
+| B12 | Amenity question containing "available" (spa, go-karting) → knowledge, not availability | Incorrect or unsupported assumptions | `lib/chat-orchestrator.test.ts` | ✅ pass |
 | F1 | Loading indicator shown while a request is pending, hidden after | Frontend loading states | `components/Chat.test.tsx` | ✅ pass |
 | F2 | Failed request → inline error + retry; retry doesn't duplicate the message | Frontend error states | `components/Chat.test.tsx` | ✅ pass |
 | F3 | Full mocked flow: question → answer → availability → clarify → results | End-to-end flow (frontend side) | `components/Chat.test.tsx` | ✅ pass |
 
-14 scenarios, every category in the assignment's Evaluation & Testing list covered by a
+15 scenarios, every category in the assignment's Evaluation & Testing list covered by a
 dedicated scenario (not overloaded onto one test), comfortably clearing the "8–10" ask. The
 remaining 8 passing tests are additional `validateChatRequest` edge cases (bad role in history,
 non-object body, whitespace-only message, etc.) bundled under B8's category above.
@@ -45,6 +46,7 @@ non-object body, whitespace-only message, etc.) bundled under B8's category abov
 | returns a friendly fallback (not the raw sentinel) when the answer is not in the KB | `{"intent":"knowledge","outcome":"fallback"}` | ✅ |
 | treats an ambiguous relative date as missing info and asks to clarify | `{"intent":"availability","outcome":"clarify"}` | ✅ |
 | does not agree with a false premise not supported by the KB | `{"intent":"knowledge","outcome":"fallback"}` | ✅ |
+| routes an amenity question containing "available" (spa, go-karting) to knowledge, not availability | `{"intent":"knowledge","outcome":"fallback"}` for both messages | ✅ |
 | folds conversation history into the prompt for follow-up questions | prompt sent to the LLM contained both prior turns verbatim | ✅ |
 | returns a graceful error when the LLM provider throws | `{"intent":"knowledge","outcome":"llm_error"}`, HTTP 500, `code: 'LLM_ERROR'`, error logged with stack trace, no crash | ✅ |
 | returns a UI-friendly availability_result when no rooms are available | `{"intent":"availability","outcome":"no_availability"}`, `rooms` all `available:false`, reply reads "no rooms are available..." | ✅ |
@@ -102,7 +104,7 @@ development):
   card with Retry renders, and Retry re-attempts without duplicating the message.
 - A short screen recording covering this walkthrough accompanies the submission (see `README.md`).
 
-## Two real bugs this test-writing process actually caught
+## Four real bugs this test-writing (and manual-testing) process actually caught
 
 Documented here rather than just fixed silently, since it's direct evidence the testing
 approach did its job rather than being written after the fact to match already-correct code:
@@ -120,3 +122,13 @@ approach did its job rather than being written after the fact to match already-c
    *already known* (e.g. "rooms for 2 adults" → `adults` extracted, only dates missing). A form
    rendering just the missing fields would have silently dropped the known value on submit.
    Added `partial` to the contract; F3 above is the regression test for it.
+4. **Amenity questions containing "available" misrouted into the booking flow** (found live,
+   during manual recording prep — not caught by the automated suite until added afterward): "since
+   you have a spa, is a complementary massage included for free?" and "do you have go carting
+   available?" both hijacked the availability path purely because they contain the word
+   "available", with no requirement that it relate to a room at all. `checkAvailability()` has no
+   concept of "go carting" — it just returned room results regardless of what was actually asked,
+   instead of the knowledge path correcting the guest the way it does for other false-premise
+   questions (B6). Fixed by requiring `availab*`/`book`/`reserve` to co-occur with an actual
+   room/stay/suite/accommodation word (or an already-unambiguous phrase like "vacancy"); added as
+   a permanent regression test.

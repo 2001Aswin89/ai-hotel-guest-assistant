@@ -7,7 +7,7 @@ interface Props {
 
 export default function AvailabilityResults({ query, rooms }: Props) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">
         {query.checkIn} &rarr; {query.checkOut} &middot; {query.adults} guest(s)
       </p>
@@ -15,7 +15,7 @@ export default function AvailabilityResults({ query, rooms }: Props) {
         {rooms.map((room) => (
           <div
             key={room.roomType}
-            className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+            className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-3 text-sm shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950"
           >
             <div className="flex items-center justify-between">
               <span className="font-medium text-zinc-900 dark:text-zinc-100">{room.roomType}</span>
